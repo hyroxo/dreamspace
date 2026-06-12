@@ -26,11 +26,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 </head>
 <body>
 <div id="app"></div>
-
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script>
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
-
 const STORAGE_KEY = 'dream_diary_data';
 const MOODS = {
   happy: { label: '开心', emoji: '😊', color: '#FFD700' },
@@ -40,12 +38,9 @@ const MOODS = {
   angry: { label: '生气', emoji: '😠', color: '#FF6347' },
   confused: { label: '困惑', emoji: '🤔', color: '#90EE90' }
 };
-
 const getAllData = () => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : { records: [] };
-  } catch { return { records: [] }; }
+  try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : { records: [] }; }
+  catch { return { records: [] }; }
 };
 const saveAllData = (data) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); };
 const getRecords = () => getAllData().records || [];
@@ -65,7 +60,6 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).su
 const getMoodEmoji = (mood) => MOODS[mood]?.emoji || '😐';
 const getMoodColor = (mood) => MOODS[mood]?.color || '#999999';
 const getMoodLabel = (mood) => MOODS[mood]?.label || mood;
-
 const exportToTxt = () => {
   const data = getAllData();
   const txt = data.records.map(r => `=== ${r.date} ===\n心情：${getMoodLabel(r.mood)}\n梦境：${r.content}\n${r.interpretation ? `\n解梦结果：\n传统解释：${r.interpretation.traditional}\n心理学分析：${r.interpretation.psychological}\n行动建议：${r.interpretation.suggestion}` : ''}\n\n`).join('');
@@ -77,7 +71,6 @@ const exportToTxt = () => {
   link.click();
   URL.revokeObjectURL(url);
 };
-
 const importFromTxt = (content) => {
   try {
     const records = [];
@@ -117,9 +110,7 @@ const importFromTxt = (content) => {
     return { success: false, message: '未找到有效的记录数据' };
   } catch (e) { return { success: false, message: '导入失败：' + e.message }; }
 };
-
 const clearAllData = () => { localStorage.removeItem(STORAGE_KEY); };
-
 let puter = null;
 const ensurePuter = () => {
   if (puter) return Promise.resolve(puter);
@@ -132,7 +123,6 @@ const ensurePuter = () => {
     document.head.appendChild(script);
   });
 };
-
 const generateMockInterpretation = (content) => {
   return new Promise(resolve => setTimeout(() => resolve({
     traditional: `根据周公解梦，${content.includes('飞') ? '梦见飞翔代表近期运势上升，事业有成。' : '此梦预示着近期会有贵人相助，诸事顺利。'}`,
@@ -140,7 +130,6 @@ const generateMockInterpretation = (content) => {
     suggestion: '建议你关注自己的情绪变化，保持积极乐观的心态。如果此梦反复出现，可以尝试记录梦境细节，探索更深层的心理意义。'
   }), 1500));
 };
-
 const generateInterpretation = async (dreamContent) => {
   try {
     await ensurePuter();
@@ -165,7 +154,6 @@ const generateInterpretation = async (dreamContent) => {
     return generateMockInterpretation(dreamContent);
   }
 };
-
 const showToast = (message, type = 'success') => {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
@@ -173,7 +161,6 @@ const showToast = (message, type = 'success') => {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), type === 'error' ? 3000 : 2000);
 };
-
 const HomePage = {
   setup() {
     const moods = MOODS;
@@ -194,9 +181,7 @@ const HomePage = {
     const showInterpretationModal = ref(false);
     const interpretationResult = ref({ traditional: '', psychological: '', suggestion: '' });
     const activeInterpretationTab = ref('traditional');
-    
     const canSave = computed(() => dreamContent.value.trim() && selectedMood.value);
-    
     const miniCalendarData = computed(() => {
       const data = [];
       const today = new Date();
@@ -209,7 +194,6 @@ const HomePage = {
       }
       return data;
     });
-    
     const chartData = computed(() => {
       const moodValues = { happy: 5, calm: 4, confused: 3, sad: 2, scared: 1, angry: 0 };
       const data = [];
@@ -223,9 +207,7 @@ const HomePage = {
       }
       return data;
     });
-    
     const loadRecords = () => { records.value = getRecords(); };
-    
     const saveRecordHandler = async (withInterpretation) => {
       if (!canSave.value) return;
       const record = {
@@ -251,7 +233,6 @@ const HomePage = {
       selectedDate.value = new Date().toISOString().split('T')[0];
       showToast(withInterpretation ? '记录并解梦成功' : '记录成功');
     };
-    
     const showDetail = (record) => { selectedRecord.value = record; showDetailModal.value = true; };
     const closeDetailModal = () => { showDetailModal.value = false; selectedRecord.value = null; };
     const editRecord = () => {
@@ -282,7 +263,6 @@ const HomePage = {
         showToast('删除成功');
       }
     };
-    
     const regenerateInterpretation = async () => {
       if (selectedRecord.value) {
         isGenerating.value = true;
@@ -295,7 +275,6 @@ const HomePage = {
         showToast('重新生成成功');
       }
     };
-    
     const updateChart = () => {
       if (!chartCanvas.value || chartData.value.length === 0) return;
       if (chartInstance) chartInstance.destroy();
@@ -322,10 +301,8 @@ const HomePage = {
         }
       });
     };
-    
     watch(chartData, () => nextTick(updateChart), { deep: true });
     onMounted(() => { loadRecords(); nextTick(updateChart); });
-    
     return {
       moods, dreamContent, selectedMood, selectedDate, records, isGenerating, chartCanvas,
       canSave, miniCalendarData, saveRecordHandler, showDetail, showDetailModal, selectedRecord,
@@ -513,7 +490,6 @@ const HomePage = {
     </div>
   `
 };
-
 const CalendarPage = {
   setup() {
     const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -617,7 +593,6 @@ const CalendarPage = {
     </div>
   `
 };
-
 const SettingsPage = {
   setup() {
     const fileInput = ref(null);
@@ -722,7 +697,6 @@ const SettingsPage = {
     </div>
   `
 };
-
 const App = {
   components: { HomePage, CalendarPage, SettingsPage },
   setup() {
@@ -755,7 +729,6 @@ const App = {
     </div>
   `
 };
-
 createApp(App).mount('#app');
 </script>
 </body>
